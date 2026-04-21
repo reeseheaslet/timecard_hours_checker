@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timecard Comparison</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+        }
+
+        h1, h2 {
+            margin-bottom: 10px;
+        }
+
+        form {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            max-width: 700px;
+        }
+
+        .form-row {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="file"],
+        input[type="date"] {
+            width: 100%;
+            max-width: 400px;
+            padding: 8px;
+        }
+
+        button {
+            padding: 10px 16px;
+            cursor: pointer;
+        }
+
+        .error {
+            color: red;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .results-wrapper {
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        table.results-table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 700px;
+        }
+
+        table.results-table th,
+        table.results-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table.results-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Timecard Comparison</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-row">
+            <label for="executime_file">executime CSV</label>
+            <input type="file" id="executime_file" name="executime_file" accept=".csv" required>
+        </div>
+
+        <div class="form-row">
+            <label for="firstdue_file">First Due CSV</label>
+            <input type="file" id="firstdue_file" name="firstdue_file" accept=".csv" required>
+        </div>
+
+        <div class="form-row">
+            <label for="pay_period_start">Pay Period Start</label>
+            <input type="date" id="pay_period_start" name="pay_period_start" value="{{ pay_period_start }}" required>
+        </div>
+
+        <div class="form-row">
+            <label for="pay_period_end">Pay Period End</label>
+            <input type="date" id="pay_period_end" name="pay_period_end" value="{{ pay_period_end }}" required>
+        </div>
+
+        <button type="submit">Run Comparison</button>
+    </form>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    {% if results_html %}
+        <h2>Results</h2>
+        <div class="results-wrapper">
+            {{ results_html | safe }}
+        </div>
+    {% endif %}
+</body>
+</html>
