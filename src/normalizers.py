@@ -50,6 +50,9 @@ def map_executime_type(raw_type_label: str) -> str:
         "SS (Sick Shift Trade Fire)": "SICK",
         "53 (TPT Sick)": "SICK",
 
+        "15 (Injury Leave Safety)": "INJURY",
+
+
         "20 (Act Capt Regular)": "AC",
         "21 (Act Capt OT)": "ACOT",
 
