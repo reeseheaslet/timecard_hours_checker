@@ -70,6 +70,15 @@
         table.results-table th {
             background-color: #f2f2f2;
         }
+
+        .hard-flag {
+            background-color: #ffb3b3;
+        }
+
+        .soft-flag {
+            background-color: #fff0b3;
+        }
+        
     </style>
 </head>
 <body>
@@ -95,7 +104,14 @@
             <label for="pay_period_end">Pay Period End</label>
             <input type="date" id="pay_period_end" name="pay_period_end" value="{{ pay_period_end }}" required>
         </div>
-
+        
+        <div class="form-row">
+            <label>
+                <input type="checkbox" name="include_signatures">
+                Include signature review
+            </label>
+        </div>
+        
         <button type="submit">Run Comparison</button>
     </form>
 
@@ -103,11 +119,52 @@
         <div class="error">{{ error }}</div>
     {% endif %}
 
-    {% if results_html %}
-        <h2>Results</h2>
-        <div class="results-wrapper">
-            {{ results_html | safe }}
-        </div>
-    {% endif %}
+    {% if results_rows %}
+    <h2>Results</h2>
+
+    <div class="results-wrapper">
+        <table class="results-table">
+            <thead>
+                <tr>
+                    {% for col in results_rows[0].keys() %}
+                        <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in results_rows %}
+            
+                    <tr>
+            
+                        {% for key, value in row.items() %}
+            
+                            {% if key == "SignatureIssueLevel" %}
+            
+                                <td class="
+                                    {% if value == 'HARD' %}
+                                        hard-flag
+                                    {% elif value == 'SOFT' %}
+                                        soft-flag
+                                    {% endif %}
+                                ">
+                                    {{ value }}
+                                </td>
+            
+                            {% else %}
+            
+                                <td>{{ value }}</td>
+            
+                            {% endif %}
+            
+                        {% endfor %}
+            
+                    </tr>
+            
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
 </body>
 </html>

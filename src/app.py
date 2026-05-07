@@ -6,18 +6,20 @@ app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    results_html = None
+    results_rows = []
     error = None
 
-    # Optional: keep form values so they stay in the page after submit
+    # Optional: keep form values so they stay in the page after submit.
     pay_period_start = ""
     pay_period_end = ""
+    include_signatures = False
 
     if request.method == "POST":
         executime_file = request.files.get("executime_file")
         firstdue_file = request.files.get("firstdue_file")
         pay_period_start = request.form.get("pay_period_start", "").strip()
         pay_period_end = request.form.get("pay_period_end", "").strip()
+        include_signatures = request.form.get("include_signatures") == "on"
 
         if not executime_file or executime_file.filename == "":
             error = "Please upload an executime CSV."
@@ -34,29 +36,29 @@ def index():
                     firstdue_file,
                     pay_period_start,
                     pay_period_end,
+                    include_signatures=include_signatures,
                 )
 
-                # Show mismatches only
-                mismatches_df = result_df[result_df["IsMismatch"]]
-
-                if mismatches_df.empty:
-                    results_html = "<p>No mismatches found.</p>"
+                if include_signatures:
+                    review_df = result_df[result_df["NeedsReview"]].copy()
                 else:
-                    results_html = mismatches_df.to_html(
-                        index=False,
-                        classes="results-table",
-                        border=0,
-                    )
+                    review_df = result_df[result_df["IsMismatch"]].copy()
+
+                if review_df.empty:
+                    results_rows = []
+                else:
+                    results_rows = review_df.to_dict(orient="records")
 
             except Exception as e:
                 error = f"Error processing files: {e}"
 
     return render_template(
         "index.html",
-        results_html=results_html,
+        results_rows=results_rows,
         error=error,
         pay_period_start=pay_period_start,
         pay_period_end=pay_period_end,
+        include_signatures=include_signatures,
     )
 
 

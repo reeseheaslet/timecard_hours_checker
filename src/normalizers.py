@@ -113,6 +113,9 @@ def normalize_executime(df: pd.DataFrame) -> pd.DataFrame:
 
     working_df["EmpKey"] = working_df["EmployeeNameCanonical"].apply(build_emp_key)
 
+    if "employeeId" not in working_df.columns:
+        working_df["employeeId"] = pd.NA
+
     normalized_df = working_df[
         [
             "EmployeeNameCanonical",
@@ -178,6 +181,7 @@ def aggregate_executime_daily(df: pd.DataFrame) -> pd.DataFrame:
                 "EmpKey",
                 "EmployeeId",
                 "WorkDate",
+                "PersonnelRank",
                 "RawTypeLabel",
                 "NormalizedType",
                 "Hours",
@@ -340,6 +344,7 @@ def prepare_firstdue_working_df(df: pd.DataFrame) -> pd.DataFrame:
     working_df["EmployeeName"] = working_df["EmployeeName"].apply(canonicalize_employee_name)
 
     working_df["EmployeeId"] = pd.NA
+    working_df["PersonnelRank"] = working_df.get("Personnel Rank", pd.Series(pd.NA, index=working_df.index))
 
     working_df["RawTypeLabel"] = working_df.apply(
         lambda row: build_firstdue_raw_type_label(
@@ -383,6 +388,7 @@ def normalize_firstdue(df: pd.DataFrame) -> pd.DataFrame:
             "EmpKey",
             "EmployeeId",
             "WorkDate",
+            "PersonnelRank",
             "RawTypeLabel",
             "NormalizedType",
             "Hours",
@@ -472,6 +478,7 @@ def expand_firstdue_to_calendar_days(df: pd.DataFrame) -> pd.DataFrame:
                 "EmpKey",
                 "EmployeeId",
                 "WorkDate",
+                "PersonnelRank",
                 "RawTypeLabel",
                 "NormalizedType",
                 "Hours",
@@ -489,6 +496,7 @@ def expand_firstdue_to_calendar_days(df: pd.DataFrame) -> pd.DataFrame:
             "EmpKey",
             "EmployeeId",
             "WorkDate",
+            "PersonnelRank",
             "RawTypeLabel",
             "NormalizedType",
             "Hours",
@@ -540,6 +548,7 @@ def aggregate_firstdue_calendar_days(df: pd.DataFrame) -> pd.DataFrame:
                 "EmpKey",
                 "EmployeeId",
                 "WorkDate",
+                "PersonnelRank",
                 "RawTypeLabel",
                 "NormalizedType",
                 "Hours",
@@ -560,6 +569,7 @@ def aggregate_firstdue_calendar_days(df: pd.DataFrame) -> pd.DataFrame:
             SourceSystem=("SourceSystem", "first"),
             EmpKey=("EmpKey", "first"),
             EmployeeId=("EmployeeId", "first"),
+            PersonnelRank=("PersonnelRank", "first"),
             RawTypeLabel=("RawTypeLabel", combine_distinct_labels),
             Hours=("Hours", "sum"),
             HasEmpSig=("HasEmpSig", "first"),
@@ -576,6 +586,7 @@ def aggregate_firstdue_calendar_days(df: pd.DataFrame) -> pd.DataFrame:
             "EmpKey",
             "EmployeeId",
             "WorkDate",
+            "PersonnelRank",
             "RawTypeLabel",
             "NormalizedType",
             "Hours",
