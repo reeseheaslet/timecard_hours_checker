@@ -41,6 +41,8 @@
         button {
             padding: 10px 16px;
             cursor: pointer;
+            margin-right: 8px;
+            margin-bottom: 8px;
         }
 
         .error {
@@ -49,9 +51,15 @@
             font-weight: bold;
         }
 
+        .filter-buttons {
+            margin-bottom: 15px;
+        }
+
         .results-wrapper {
             overflow-x: auto;
             max-width: 100%;
+            max-height: 75vh;
+            border: 1px solid #ccc;
         }
 
         table.results-table {
@@ -69,6 +77,22 @@
 
         table.results-table th {
             background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        table.results-table th:first-child,
+        table.results-table td:first-child {
+            position: sticky;
+            left: 0;
+            background-color: white;
+            z-index: 1;
+        }
+
+        table.results-table th:first-child {
+            background-color: #f2f2f2;
+            z-index: 3;
         }
 
         .hard-flag {
@@ -78,7 +102,6 @@
         .soft-flag {
             background-color: #fff0b3;
         }
-        
     </style>
 </head>
 <body>
@@ -104,14 +127,7 @@
             <label for="pay_period_end">Pay Period End</label>
             <input type="date" id="pay_period_end" name="pay_period_end" value="{{ pay_period_end }}" required>
         </div>
-        
-        <div class="form-row">
-            <label>
-                <input type="checkbox" name="include_signatures">
-                Include signature review
-            </label>
-        </div>
-        
+
         <button type="submit">Run Comparison</button>
     </form>
 
@@ -120,51 +136,79 @@
     {% endif %}
 
     {% if results_rows %}
-    <h2>Results</h2>
+        <h2>Results</h2>
 
-    <div class="results-wrapper">
-        <table class="results-table">
-            <thead>
-                <tr>
-                    {% for col in results_rows[0].keys() %}
-                        <th>{{ col }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
+        <div class="filter-buttons">
+            <button type="button" onclick="setView('all')">All Review Items</button>
+            <button type="button" onclick="setView('hours')">Hour Mismatches Only</button>
+            <button type="button" onclick="setView('signatures')">Signatures Only</button>
+        </div>
 
-            <tbody>
-                {% for row in results_rows %}
-            
+        <div class="results-wrapper">
+            <table class="results-table">
+                <thead>
                     <tr>
-            
-                        {% for key, value in row.items() %}
-            
-                            {% if key == "SignatureIssueLevel" %}
-            
-                                <td class="
-                                    {% if value == 'HARD' %}
-                                        hard-flag
-                                    {% elif value == 'SOFT' %}
-                                        soft-flag
-                                    {% endif %}
-                                ">
-                                    {{ value }}
-                                </td>
-            
-                            {% else %}
-            
-                                <td>{{ value }}</td>
-            
-                            {% endif %}
-            
+                        {% for col in results_rows[0].keys() %}
+                            <th>{{ col }}</th>
                         {% endfor %}
-            
                     </tr>
-            
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-{% endif %}
+                </thead>
+
+                <tbody>
+                    {% for row in results_rows %}
+                        <tr
+                            data-mismatch="{{ row.IsMismatch }}"
+                            data-signature="{{ row.HasSignatureIssue }}"
+                        >
+                            {% for key, value in row.items() %}
+                                {% if key == "SignatureIssueLevel" %}
+                                    <td class="
+                                        {% if value == 'HARD' %}
+                                            hard-flag
+                                        {% elif value == 'SOFT' %}
+                                            soft-flag
+                                        {% endif %}
+                                    ">
+                                        {{ value }}
+                                    </td>
+                                {% else %}
+                                    <td>{{ value }}</td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    {% elif request.method == "POST" and not error %}
+
+        <h2>Results</h2>
+        <p>No errors found! Pat yourself on the fuckin back my boy!</p>
+
+    {% endif %}
+
+    <script>
+        function setView(view) {
+            const rows = document.querySelectorAll("tbody tr");
+
+            rows.forEach(row => {
+                const isMismatch = row.dataset.mismatch === "True";
+                const hasSignatureIssue = row.dataset.signature === "True";
+
+                let show = true;
+
+                if (view === "hours") {
+                    show = isMismatch;
+                }
+
+                if (view === "signatures") {
+                    show = hasSignatureIssue;
+                }
+
+                row.style.display = show ? "" : "none";
+            });
+        }
+    </script>
 </body>
 </html>

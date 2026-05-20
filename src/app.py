@@ -9,17 +9,14 @@ def index():
     results_rows = []
     error = None
 
-    # Optional: keep form values so they stay in the page after submit.
     pay_period_start = ""
     pay_period_end = ""
-    include_signatures = False
 
     if request.method == "POST":
         executime_file = request.files.get("executime_file")
         firstdue_file = request.files.get("firstdue_file")
         pay_period_start = request.form.get("pay_period_start", "").strip()
         pay_period_end = request.form.get("pay_period_end", "").strip()
-        include_signatures = request.form.get("include_signatures") == "on"
 
         if not executime_file or executime_file.filename == "":
             error = "Please upload an executime CSV."
@@ -31,18 +28,17 @@ def index():
             error = "Please enter a pay period end date."
         else:
             try:
+                # Always include signatures in backend processing.
                 result_df = run_web_pipeline(
                     executime_file,
                     firstdue_file,
                     pay_period_start,
                     pay_period_end,
-                    include_signatures=include_signatures,
+                    include_signatures=True,
                 )
 
-                if include_signatures:
-                    review_df = result_df[result_df["NeedsReview"]].copy()
-                else:
-                    review_df = result_df[result_df["IsMismatch"]].copy()
+                # Always return all review items.
+                review_df = result_df[result_df["NeedsReview"]].copy()
 
                 if review_df.empty:
                     results_rows = []
@@ -58,7 +54,6 @@ def index():
         error=error,
         pay_period_start=pay_period_start,
         pay_period_end=pay_period_end,
-        include_signatures=include_signatures,
     )
 
 
