@@ -11,12 +11,16 @@ def index():
 
     pay_period_start = ""
     pay_period_end = ""
+    issue_filter = "all"
 
     if request.method == "POST":
         executime_file = request.files.get("executime_file")
         firstdue_file = request.files.get("firstdue_file")
         pay_period_start = request.form.get("pay_period_start", "").strip()
         pay_period_end = request.form.get("pay_period_end", "").strip()
+        issue_filter = request.form.get("issue_filter", "all").strip().lower()
+        if issue_filter not in {"all", "hard"}:
+            issue_filter = "all"
 
         if not executime_file or executime_file.filename == "":
             error = "Please upload an executime CSV."
@@ -37,8 +41,15 @@ def index():
                     include_signatures=True,
                 )
 
-                # Always return all review items.
+                # Start from all review items.
                 review_df = result_df[result_df["NeedsReview"]].copy()
+
+                # Optionally narrow to HARD signature issues only.
+                if issue_filter == "hard":
+                    review_df = review_df[
+                        review_df["SignatureIssueLevel"] == "HARD"
+                        | (review_df["IsMismatch"])
+                    ].copy()
 
                 if review_df.empty:
                     results_rows = []
@@ -54,6 +65,7 @@ def index():
         error=error,
         pay_period_start=pay_period_start,
         pay_period_end=pay_period_end,
+        issue_filter=issue_filter,
     )
 
 
